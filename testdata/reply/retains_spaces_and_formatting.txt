@@ -1,0 +1,13 @@
+Formatting and
+
+spaces
+
+- A
+- B
+- C
+
+should be retained
+
+
+    - Item #1
+    - Item #2
