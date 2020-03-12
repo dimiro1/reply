@@ -1,4 +1,4 @@
-// reply package is essentially a source code conversion
+// Package reply package is essentially a source code conversion
 // of the ruby library https://github.com/discourse/email_reply_trimmer.
 // The core logic is a almost line by line conversion.
 //

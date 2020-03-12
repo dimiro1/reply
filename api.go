@@ -239,10 +239,9 @@ func cleanup(text string) string {
 		text, _ = regex.ReplaceFunc(text, func(m regexp2.Match) string {
 			if strings.Count(m.String(), "\n") > 4 {
 				return m.String()
-			} else {
-				newText, _ := regexp2.MustCompile(`\n+[[:space:]]*`, regexp2.RE2).Replace(m.String(), " ", 0, -1)
-				return newText
 			}
+			newText, _ := regexp2.MustCompile(`\n+[[:space:]]*`, regexp2.RE2).Replace(m.String(), " ", 0, -1)
+			return newText
 		}, 0, -1)
 	}
 
