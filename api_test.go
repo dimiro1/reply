@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"reply"
+	"github.com/dimiro1/reply"
 )
 
 func TestText(t *testing.T) {

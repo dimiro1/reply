@@ -1,4 +1,4 @@
-module reply
+module github.com/dimiro1/reply
 
 go 1.12
 
