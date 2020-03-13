@@ -46,19 +46,21 @@ func FromText(text string) string {
 	pattern := patternBuilder.String()
 
 	// remove everything after the first delimiter
-	match, err := regexp2.MustCompile(`d`, regexp2.RE2).FindStringMatch(pattern)
-	if err != nil {
-		return ""
-	}
-	if match != nil {
-		index := match.Index
-		pattern = sliceString(pattern, 0, index-1)
-		lines = sliceArray(lines, 0, index-1)
+	{
+		match, err := regexp2.MustCompile(`d`, regexp2.RE2).FindStringMatch(pattern)
+		if err != nil {
+			return ""
+		}
+		if match != nil {
+			index := match.Index
+			pattern = sliceString(pattern, 0, index-1)
+			lines = sliceArray(lines, 0, index-1)
+		}
 	}
 
 	// remove all mobile signatures
 	for {
-		match, err = regexp2.MustCompile(`s`, regexp2.RE2).FindStringMatch(pattern)
+		match, err := regexp2.MustCompile(`s`, regexp2.RE2).FindStringMatch(pattern)
 		if err != nil {
 			return ""
 		}
@@ -72,64 +74,72 @@ func FromText(text string) string {
 	}
 
 	// when the reply is at the end of the email
-	match, err = regexp2.MustCompile(`^(b[^t]+)*b[bqeh]+t[et]*$`, regexp2.RE2).FindStringMatch(pattern)
-	if err != nil {
-		return ""
-	}
-	if match != nil {
-		submatch, err := regexp2.MustCompile(`t[et]*$`, regexp2.RE2).FindStringMatch(pattern)
+	{
+		match, err := regexp2.MustCompile(`^(b[^t]+)*b[bqeh]+t[et]*$`, regexp2.RE2).FindStringMatch(pattern)
 		if err != nil {
 			return ""
 		}
+		if match != nil {
+			submatch, err := regexp2.MustCompile(`t[et]*$`, regexp2.RE2).FindStringMatch(pattern)
+			if err != nil {
+				return ""
+			}
 
-		index := submatch.Index
-		pattern = ""
-		lines = sliceArray(lines, index, len(lines)-1)
+			index := submatch.Index
+			pattern = ""
+			lines = sliceArray(lines, index, len(lines)-1)
+		}
 	}
 
 	// if there is an embedded email marker, not followed by a quote
 	// then take everything up to that marker
-	match, err = regexp2.MustCompile(`te*b[^q]*$`, regexp2.RE2).FindStringMatch(pattern)
-	if err != nil {
-		return ""
-	}
-	if match != nil {
-		index := match.Index
-		pattern = sliceString(pattern, 0, index)
-		lines = sliceArray(lines, 0, index)
+	{
+		match, err := regexp2.MustCompile(`te*b[^q]*$`, regexp2.RE2).FindStringMatch(pattern)
+		if err != nil {
+			return ""
+		}
+		if match != nil {
+			index := match.Index
+			pattern = sliceString(pattern, 0, index)
+			lines = sliceArray(lines, 0, index)
+		}
 	}
 
 	// if there is an embedded email marker, followed by a huge quote
 	// then take everything up to that marker
-	match, err = regexp2.MustCompile(`te*b[eqbh]*([te]*)$`, regexp2.RE2).FindStringMatch(pattern)
-	if err != nil {
-		return ""
-	}
-	if match != nil && strings.Count(match.GroupByNumber(1).String(), "t") < 7 {
-		submatch, err := regexp2.MustCompile(`te*b[eqbh]*[te]*$`, regexp2.RE2).FindStringMatch(pattern)
+	{
+		match, err := regexp2.MustCompile(`te*b[eqbh]*([te]*)$`, regexp2.RE2).FindStringMatch(pattern)
 		if err != nil {
 			return ""
 		}
-		index := submatch.Index
-		pattern = sliceString(pattern, 0, index)
-		lines = sliceArray(lines, 0, index)
+		if match != nil && strings.Count(match.GroupByNumber(1).String(), "t") < 7 {
+			submatch, err := regexp2.MustCompile(`te*b[eqbh]*[te]*$`, regexp2.RE2).FindStringMatch(pattern)
+			if err != nil {
+				return ""
+			}
+			index := submatch.Index
+			pattern = sliceString(pattern, 0, index)
+			lines = sliceArray(lines, 0, index)
+		}
 	}
 
 	// if there is some text before a huge quote ending the email,
 	// then remove the quote
-	match, err = regexp2.MustCompile(`te*[qbe]+$`, regexp2.RE2).FindStringMatch(pattern)
-	if err != nil {
-		return ""
-	}
-	if match != nil {
-		index := match.Index
-		pattern = sliceString(pattern, 0, index)
-		lines = sliceArray(lines, 0, index)
+	{
+		match, err := regexp2.MustCompile(`te*[qbe]+$`, regexp2.RE2).FindStringMatch(pattern)
+		if err != nil {
+			return ""
+		}
+		if match != nil {
+			index := match.Index
+			pattern = sliceString(pattern, 0, index)
+			lines = sliceArray(lines, 0, index)
+		}
 	}
 
 	// if there still are some embedded email markers, just remove them
 	for {
-		match, err = regexp2.MustCompile(`b`, regexp2.RE2).FindStringMatch(pattern)
+		match, err := regexp2.MustCompile(`b`, regexp2.RE2).FindStringMatch(pattern)
 		if err != nil {
 			return ""
 		}
@@ -143,33 +153,37 @@ func FromText(text string) string {
 	}
 
 	// fix email headers when they span over multiple lines
-	match, err = regexp2.MustCompile(`h+[hte]+h+e`, regexp2.RE2).FindStringMatch(pattern)
-	if err != nil {
-		return ""
-	}
-	if match != nil {
-		index := match.Index
-		for i := 0; i < match.Length; i++ {
-			c := []rune(header)[0]
-			pattern = stringReplaceChar(pattern, c, index+i)
+	{
+		match, err := regexp2.MustCompile(`h+[hte]+h+e`, regexp2.RE2).FindStringMatch(pattern)
+		if err != nil {
+			return ""
+		}
+		if match != nil {
+			index := match.Index
+			for i := 0; i < match.Length; i++ {
+				c := []rune(header)[0]
+				pattern = stringReplaceChar(pattern, c, index+i)
+			}
 		}
 	}
 
 	// if there are at least 3 consecutive email headers,
 	// take everything up to these headers
-	match, err = regexp2.MustCompile(`t[eq]*h{3,}`, regexp2.RE2).FindStringMatch(pattern)
-	if err != nil {
-		return ""
-	}
-	if match != nil {
-		index := match.Index
-		pattern = sliceString(pattern, 0, index)
-		lines = sliceArray(lines, 0, index)
+	{
+		match, err := regexp2.MustCompile(`t[eq]*h{3,}`, regexp2.RE2).FindStringMatch(pattern)
+		if err != nil {
+			return ""
+		}
+		if match != nil {
+			index := match.Index
+			pattern = sliceString(pattern, 0, index)
+			lines = sliceArray(lines, 0, index)
+		}
 	}
 
 	// if there still are some email headers, just remove them
 	for {
-		match, err = regexp2.MustCompile(`h`, regexp2.RE2).FindStringMatch(pattern)
+		match, err := regexp2.MustCompile(`h`, regexp2.RE2).FindStringMatch(pattern)
 		if err != nil {
 			return ""
 		}
@@ -183,18 +197,20 @@ func FromText(text string) string {
 	}
 
 	// remove trailing quotes when there's at least one line of text
-	match1, err := regexp2.MustCompile(`t`, regexp2.RE2).FindStringMatch(pattern)
-	if err != nil {
-		return ""
-	}
-	match2, err := regexp2.MustCompile(`[eq]+$`, regexp2.RE2).FindStringMatch(pattern)
-	if err != nil {
-		return ""
-	}
-	if match1 != nil && match2 != nil {
-		index := match2.Index
-		pattern = sliceString(pattern, 0, index-1)
-		lines = sliceArray(lines, 0, index-1)
+	{
+		match1, err := regexp2.MustCompile(`t`, regexp2.RE2).FindStringMatch(pattern)
+		if err != nil {
+			return ""
+		}
+		match2, err := regexp2.MustCompile(`[eq]+$`, regexp2.RE2).FindStringMatch(pattern)
+		if err != nil {
+			return ""
+		}
+		if match1 != nil && match2 != nil {
+			index := match2.Index
+			pattern = sliceString(pattern, 0, index-1)
+			lines = sliceArray(lines, 0, index-1)
+		}
 	}
 
 	return strings.Join(lines, "\n")
