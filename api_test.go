@@ -12,7 +12,8 @@ import (
 )
 
 func TestText(t *testing.T) {
-	skipped := []string{}
+	// Add files to be skipped.
+	var skipped []string
 
 	err := filepath.Walk("testdata/emails", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -31,7 +32,7 @@ func TestText(t *testing.T) {
 					}
 				}
 
-				in, err := ioutil.ReadFile(path)
+				in, err := os.Open(path)
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err)
 				}
@@ -41,7 +42,11 @@ func TestText(t *testing.T) {
 					t.Fatalf("unexpected error: %s", err)
 				}
 
-				replyText := reply.FromText(string(in))
+				replyText, err := reply.FromReader(in)
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+
 				if strings.TrimSpace(replyText) != strings.TrimSpace(string(expected)) {
 					t.Errorf("\nexpected:\n%s\n\ngot:\n%s", string(expected), replyText)
 				}
