@@ -36,9 +36,6 @@ func sliceString(text string, start int, end int) string {
 // ... is exclusive
 func sliceArray(lines []string, start int, end int) []string {
 	newLines := []string{}
-	if end > len(lines) {
-		end = len(lines) - 1
-	}
 	for i := start; i <= end; i++ {
 		newLines = append(newLines, lines[i])
 	}
