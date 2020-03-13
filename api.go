@@ -4,9 +4,17 @@ import (
 	"io"
 	"io/ioutil"
 	"strings"
+	"time"
 
 	"github.com/dlclark/regexp2"
 )
+
+func init() {
+	// The default configuration is set to 'forever'.
+	// I am not expecting any regex to take more than a few milliseconds.
+	// Setting this value to 1s just to be on the safe side.
+	regexp2.DefaultMatchTimeout = 1 * time.Second
+}
 
 // FromReader returns the reply text from the e-mail text body.
 func FromReader(reader io.Reader) (string, error) {
