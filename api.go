@@ -218,7 +218,12 @@ func FromText(text string) string {
 
 func cleanup(text string) string {
 	// normalize line endings
-	text = strings.ReplaceAll(text, "\r\n", "\n")
+	replacer := strings.NewReplacer(
+		"\r\n", "\n",
+		"\r", "\n",
+	)
+
+	text = replacer.Replace(text)
 
 	// remove PGP markers
 	for _, r := range patterns["REMOVE_PGP_MARKERS_REGEX"] {
